@@ -14,7 +14,7 @@ A bash wrapper CLI script to add/extend the ProtonVPN CLI commands with addition
 
 ## Requirements
 
-- `protonvpn-cli`: The official ProtonVPN command-line client
+- `protonvpn`: The official ProtonVPN command-line client
 - `natpmpc`: For NAT-PMP port mapping support
 - Standard Unix tools: `curl`, `bash`, `grep`
 
