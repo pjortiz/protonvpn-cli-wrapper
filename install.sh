@@ -31,7 +31,13 @@ log_error() {
 prompt_confirm() {
     local prompt="$1"
     local response
-    read -p "$prompt (y/n) " -r response
+    if [ -t 0 ]; then
+        read -r -p "$prompt (y/n) " response
+    elif [ -r /dev/tty ]; then
+        read -r -p "$prompt (y/n) " response </dev/tty
+    else
+        return 1
+    fi
     [[ "$response" =~ ^[Yy]$ ]]
 }
 
