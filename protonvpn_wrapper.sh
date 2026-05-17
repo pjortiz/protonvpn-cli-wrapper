@@ -6,13 +6,11 @@ _PROTONVPN_KEEPALIVE_LOG_FILE="/tmp/protonvpn_keepalive.log"
 _PROTONVPN_PORT_FILE="/tmp/protonvpn_mapped_port"
 
 protonvpn_help() {
-    echo ""
-    echo ""
-    echo "*********************************************************************************"
-    echo ""
     echo "ProtonVPN CLI Wrapper - Extended functionality for port forwarding keep-alive"
     echo "Version: $_PROTONVPN_HELPER_UTILS_VERSION"
     echo "Source: https://github.com/pjortiz/protonvpn-cli-wrapper"
+    echo ""
+    echo "Usage: protonvpn COMMAND [ARGS]..."
     echo ""
     echo "commands:"
     echo "  connect           (extended) Starts port-forwarding keep-alive in background after connecting"
@@ -136,6 +134,9 @@ protonvpn() {
 
         --help|-h)
             command protonvpn --help 2>&1
+            echo ""
+            echo "*********************************************************************************"
+            echo ""
             protonvpn_help
             ;;
 

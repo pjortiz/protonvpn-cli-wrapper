@@ -5,7 +5,7 @@ A bash wrapper CLI script to add/extend the ProtonVPN CLI commands with addition
 ## Features
 
 - **Port Forwarding Keep-Alive**: Automatically renews NAT-PMP port mappings to prevent disconnection timeouts
-- **Extended Commands**: 
+- **Extended Commands**:
   - `protonvpn connect` - Start with port-forwarding keep-alive in background
   - `protonvpn disconnect` - Stop keep-alive before disconnecting
   - `protonvpn get-port` - Display the current mapped port

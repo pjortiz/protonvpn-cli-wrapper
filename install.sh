@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 # ProtonVPN CLI Wrapper Installer
 # This script downloads and installs the protonvpn wrapper to ~/.protonvpn-wrapper
 # and adds the necessary source line to shell rc files.
@@ -30,6 +28,13 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+prompt_confirm() {
+    local prompt="$1"
+    local response
+    read -p "$prompt (y/n) " -r response
+    [[ "$response" =~ ^[Yy]$ ]]
+}
+
 # Step 1: Download the wrapper script to temp directory
 log_info "Downloading ProtonVPN wrapper from GitHub..."
 if ! curl -fsSL "$REPO_URL/$WRAPPER_FILE" -o "$TEMP_DIR/$WRAPPER_FILE"; then
@@ -38,14 +43,24 @@ if ! curl -fsSL "$REPO_URL/$WRAPPER_FILE" -o "$TEMP_DIR/$WRAPPER_FILE"; then
 fi
 log_info "Downloaded successfully."
 
-# Step 2: Create install directory and copy file
+# Step 2: Check if already installed and prompt for confirmation
+if [ -f "$INSTALL_DIR/$WRAPPER_FILE" ]; then
+    log_warn "ProtonVPN wrapper is already installed at $INSTALL_DIR"
+    if ! prompt_confirm "Do you want to override the existing installation?"; then
+        log_info "Installation cancelled."
+        exit 0
+    fi
+    log_info "Proceeding with override..."
+fi
+
+# Step 3: Create install directory and copy file
 log_info "Installing to $INSTALL_DIR..."
 mkdir -p "$INSTALL_DIR"
 cp "$TEMP_DIR/$WRAPPER_FILE" "$INSTALL_DIR/$WRAPPER_FILE"
 chmod +x "$INSTALL_DIR/$WRAPPER_FILE"
 log_info "Installed successfully."
 
-# Step 3: Add source line to shell rc files
+# Step 4: Add source line to shell rc files
 SOURCE_LINE="[ -f $INSTALL_DIR/$WRAPPER_FILE ] && source $INSTALL_DIR/$WRAPPER_FILE"
 
 # Array of shell rc files to check (in order of precedence)
@@ -57,14 +72,26 @@ RC_FILES=(
     "$HOME/.config/fish/config.fish"
 )
 
-files_updated=0
-
+# Check if source line already exists in any rc file
+source_line_exists=false
 for rc_file in "${RC_FILES[@]}"; do
     if [ -f "$rc_file" ]; then
-        # Check if source line already exists
         if grep -q "source $INSTALL_DIR/$WRAPPER_FILE" "$rc_file" 2>/dev/null; then
-            log_warn "$rc_file already contains the source line (skipping)"
-        else
+            log_warn "$rc_file already contains the source line"
+            source_line_exists=true
+            break
+        fi
+    fi
+done
+
+files_updated=0
+files_found=0
+
+# Only add to rc files if source line doesn't already exist
+if [ "$source_line_exists" = false ]; then
+    for rc_file in "${RC_FILES[@]}"; do
+        if [ -f "$rc_file" ]; then
+            ((files_found++))
             # Add the source line to the file
             if [ "$(basename "$rc_file")" = "config.fish" ]; then
                 # Fish shell uses different syntax
@@ -77,11 +104,18 @@ for rc_file in "${RC_FILES[@]}"; do
             log_info "Added source line to $rc_file"
             ((files_updated++))
         fi
-    fi
-done
+    done
+else
+    # Count existing rc files for the final message
+    for rc_file in "${RC_FILES[@]}"; do
+        if [ -f "$rc_file" ]; then
+            ((files_found++))
+        fi
+    done
+fi
 
-if [ $files_updated -eq 0 ]; then
-    log_warn "No shell rc files were found or updated."
+if [ $files_found -eq 0 ]; then
+    log_warn "No shell rc files were found."
     log_info "Please manually add the following line to your shell rc file:"
     echo ""
     echo "    $SOURCE_LINE"
@@ -89,11 +123,6 @@ if [ $files_updated -eq 0 ]; then
 else
     log_info "Installation complete!"
     log_info "Reload your shell configuration by running: source ~/.bashrc (or your shell rc file)"
-    echo ""
-    echo "Available commands:"
-    echo "  protonvpn connect           Start connection with port-forwarding keep-alive"
-    echo "  protonvpn disconnect        Stop keep-alive before disconnecting"
-    echo "  protonvpn get-port          Print the current mapped port"
-    echo "  protonvpn keepalive-logs    Follow the live keep-alive log"
-    echo "  protonvpn keepalive-stop    Stop the keep-alive background process"
+    source $INSTALL_DIR/$WRAPPER_FILE
+    protonvpn_help
 fi
