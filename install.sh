@@ -124,5 +124,6 @@ else
     log_info "Installation complete!"
     log_info "Reload your shell configuration by running: source ~/.bashrc (or your shell rc file)"
     source $INSTALL_DIR/$WRAPPER_FILE
+    echo ""
     protonvpn_help
 fi
