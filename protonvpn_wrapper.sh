@@ -10,7 +10,7 @@ protonvpn_help() {
     echo ""
     echo "*********************************************************************************"
     echo ""
-    echo "ProtonVPN Helper Utils"
+    echo "ProtonVPN CLI Wrapper - Extended functionality for port forwarding keep-alive"
     echo "Version: $_PROTONVPN_HELPER_UTILS_VERSION"
     echo "Source: https://github.com/pjortiz/protonvpn-cli-wrapper"
     echo ""
